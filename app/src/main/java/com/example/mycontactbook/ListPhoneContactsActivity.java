@@ -10,6 +10,9 @@ import android.provider.ContactsContract;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -19,8 +22,10 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.MenuItemCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +34,13 @@ import java.util.Locale;
 public class ListPhoneContactsActivity extends AppCompatActivity {
     private List<String> phoneContactsList = new ArrayList<>();
     private List<Contacts> list = new ArrayList<>();
+    List<Contacts> filterList = new ArrayList<>();
+
     private ArrayAdapter<String> contactsListDataAdapter;
-    EditText etSearch;
     CustomAdapter customAdapter;
     ListView contactsListView = null;
+    MenuItem search;
+    SearchView searchView;
     Contacts pojo;
     private int PERMISSION_REQUEST_CODE_READ_CONTACTS = 1;
     private int PERMISSION_REQUEST_CODE_WRITE_CONTACTS = 2;
@@ -42,26 +50,7 @@ public class ListPhoneContactsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_phone_contacts);
         contactsListView = (ListView)findViewById(R.id.lv);
-        etSearch = (EditText)findViewById(R.id.etSearch);
-        etSearch.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-                //customAdapter.getFilter().filter(s.toString());
-                String text = etSearch.getText().toString().toLowerCase(Locale.getDefault());
-                customAdapter.filter(text);
-            }
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-                Toast.makeText(ListPhoneContactsActivity.this, "Search = "+s, Toast.LENGTH_SHORT).show();
-                //ListPhoneContactsActivity.this.customAdapter.getFilter().filter(s);
-            }
-        });
         try {
             //list.add(new Contacts("aaa","aaa",R.drawable.ic_launcher_background+""));
             customAdapter = new CustomAdapter(this, list);
@@ -124,6 +113,8 @@ public class ListPhoneContactsActivity extends AppCompatActivity {
         });
 
     }
+
+
     private boolean hasPhoneContactsPermission(String permission)
     {
         boolean ret = false;
@@ -257,6 +248,75 @@ public class ListPhoneContactsActivity extends AppCompatActivity {
         catch (Exception e)
         {
             Log.i("My Error4 = ",e+"");
+        }
+    }
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater mi = getMenuInflater();
+        mi.inflate(R.menu.search_menu, menu);
+        search = menu.findItem(R.id.search);
+        searchView  = (SearchView) MenuItemCompat.getActionView(search);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                searchView.clearFocus();
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Toast.makeText(ListPhoneContactsActivity.this, "Searching for = "+newText, Toast.LENGTH_SHORT).show();
+                if(newText.isEmpty())
+                {
+                    filterList =  list;
+                    Log.i("My filterList size = ",filterList.size()+"");
+                }
+                else
+                {
+                    List<Contacts> filteredList = new ArrayList<>();
+                    /*List<Contacts> rlist = new ArrayList<>();
+                    rlist.add(new Contacts("ss","22","ff"));
+                    rlist.add(new Contacts("aa","33","ff"));
+                    rlist.add(new Contacts("bb","44","ff"));
+                    for(Contacts row:rlist)*/
+
+                    for(Contacts row:list)
+                    {
+                        if(row.getName()!=null && !row.getName().equalsIgnoreCase(""))
+                        {
+                            Log.i("My row.getName()1 = ",row.getName()+"");
+                            Log.i("My row.getphone()1 = ",row.getPhone()+"");
+                            if(row.getName().toLowerCase().contains(newText.toLowerCase()) || row.getPhone().toLowerCase().contains(newText.toLowerCase()))
+                            {
+                                filteredList.add(row);
+                            }
+                            filterList = filteredList;
+                        }
+
+                    }
+                }
+                customAdapter.setFilter(filterList);
+                return false;
+            }
+        });
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        int id = item.getItemId();
+
+        switch (item.getItemId()) {
+            //int id = item.getItemId();
+            case android.R.id.home:
+                finish();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
         }
     }
 }

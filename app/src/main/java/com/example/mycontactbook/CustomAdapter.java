@@ -77,62 +77,12 @@ public class CustomAdapter extends ArrayAdapter<Contacts> {
         //}
         return v;
     }
-
-    @NonNull
-    @Override
-    public Filter getFilter() {
-        final Filter filter = new Filter() {
-            @Override
-            protected FilterResults performFiltering(CharSequence constraint) {
-                Log.i("My constraint = ",constraint+"");
-
-                FilterResults results = new FilterResults();        // Holds the results of a filtering operation in values
-                ArrayList<Contacts> FilteredArrList = new ArrayList<Contacts>();
-                if(mOriginalValues==null)
-                {
-                    mOriginalValues = new ArrayList<Contacts>(phoneContactsList);
-                    //save original data in mOriginalValues
-                }
-                if (constraint == null || constraint.length() == 0) {
-
-                    // set the Original result to return
-                    results.count = mOriginalValues.size();
-                    results.values = mOriginalValues;
-                    Log.i("My count = ",results.count+"");
-                    Log.i("My values = ",results.values+"");
-
-                } else {
-                    constraint = constraint.toString().toLowerCase();
-                    Log.i("My constraint2 = ",constraint+"");
-                    for (int i = 0; i < mOriginalValues.size(); i++) {
-                        Log.i("My mOriginalValues = ",mOriginalValues+"");
-                        String data = mOriginalValues.get(i).name;
-                        Log.i("My data = ",data+"");
-                        if (data.toLowerCase().startsWith(constraint.toString())) {
-                            FilteredArrList.add(new Contacts(mOriginalValues.get(i).name,mOriginalValues.get(i).phone, mOriginalValues.get(i).getImg()));
-                        }
-                    }
-                    // set the Filtered result to return
-                    results.count = FilteredArrList.size();
-                    results.values = FilteredArrList;
-                }
-                return results;
-            }
-
-            @SuppressWarnings("unchecked")
-            @Override
-            protected void publishResults(CharSequence constraint, FilterResults results) {
-                phoneContactsList = (List<Contacts>) results.values; // has the filtered values
-                Log.i("New constraint = ",constraint+"");
-                Log.i("New results = ",results+"");
-                Log.i("New values = ",results.values+"");
-                Log.i("New List = ",phoneContactsList+"");
-                //notifyDataSetChanged();
-            }
-        };
-        return filter;
+    public void setFilter(List<Contacts> f)
+    {
+        phoneContactsList = f;
+        Log.i("My mylst2 = ",phoneContactsList+"");
+        notifyDataSetChanged();
     }
-
 
     @Override
     public Contacts getItem(int position) {
